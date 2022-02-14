@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="createCarBookings" doc:id="f45a66f7-dc7f-4a94-9afc-bdde02db7892" >
+		<set-variable value="#[payload.partner]" doc:name="carBookingPartner" doc:id="68b2687a-d360-433a-bcca-bb5039f10655" variableName="carBookingPartner" />
+		<choice doc:name="Choice" doc:id="3df1e69a-1721-4aa6-b6e5-e7a8209266fe" >
+			<when expression="#[payload.partner == 'Uber']" >
+				<http:request method="POST" doc:name="Uber_CarBookingRequest" doc:id="e901f9f9-2879-48c7-80df-c4cdd368478e" config-ref="HTTP_Request_configuration_Uber" path="/api/uber" />
+				<ee:transform doc:name="Transform Message" doc:id="50c50735-4313-4d73-b7c0-dcf1acbc3478" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	message:"Hi " ++ payload01.firstName ++ ", Your car is booked successfully" as String,
+	carBookingDetails: {
+		Partner: payload01.partner,
+		Source: payload01.source,
+		Destination: payload01.destination,
+		ScheduledDate: now() as Date {format: "yyyy/MM/dd"} as String,
+		ScheduledTime: now() as String {format : "HH:mm:ss"},
+		TypeOfCar: payload01.typeOfCar,
+		NoOfSeatsBooked: payload01.noOfSeats
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[payload.partner == 'Ola']" >
+				<http:request method="POST" doc:name="Ola_CarBookingRequest" doc:id="0471ebea-1f6c-481d-b3bb-b1aef4d09460" config-ref="HTTP_Request_configuration_Ola" path="/api/ola" />
+				<ee:transform doc:name="Transform Message" doc:id="7acf0070-04d9-4ff4-84c4-178d83c7218a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	message:"Hi " ++ payload01.firstName ++ ", Your car is booked successfully" as String,
+	carBookingDetails: {
+		Partner: payload01.partner,
+		Source: payload01.source,
+		Destination: payload01.destination,
+		ScheduledDate: now() as Date {format: "yyyy/MM/dd"} as String,
+		ScheduledTime: now() as String {format : "HH:mm:ss"},
+		TypeOfCar: payload01.typeOfCar,
+		NoOfSeatsBooked: payload01.noOfSeats
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value="Invalid partner selected...." doc:name="Set Payload" doc:id="925caa4e-61ef-4e08-a1ce-9139e882b0e5" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getCars" doc:id="0897ed98-dd3c-40a8-af47-f0df0b660c40" >
+		<set-variable value="#[attributes.queryParams.source]" doc:name="source variable" doc:id="bcf982a2-7c3b-4293-856b-307025be5cd4" variableName="source" />
+		<set-variable value="#[attributes.queryParams.destination]" doc:name="destination variable" doc:id="221e5813-cd80-4e75-9cb4-d45016d63532" variableName="destination" />
+		<choice doc:name="Choice" doc:id="f2dfbadc-8fef-4961-b239-29f4e3c6c59e" >
+			<when expression="#[vars.source == 'Vimannagar' and vars.destination == 'Bhukum']" >
+				<http:request method="GET" doc:name="RequestUberPartner" doc:id="8b5d07a8-b3c3-4a54-b456-aa8accc408b1" config-ref="HTTP_Request_configuration_Uber" path="/api/uber" />
+				<foreach doc:name="Check For the available car as per the source and destination" doc:id="24cabcf1-9ff9-44f0-a85e-b69e0073bf30" >
+					<choice doc:name="checkCarsAvailable" doc:id="0bdb2614-5b30-47bc-8226-e8562590ee88" >
+						<when expression="#[vars.source == payload.source and vars.destination == payload.destination]" >
+							<ee:transform doc:name="Transform Message" doc:id="60ee8a59-d45d-4b52-a8ad-9952f78e1b72" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+						<otherwise >
+							<set-payload value="No cars available for the selected destination" doc:name="Set Payload" doc:id="614ba787-eddf-4484-ab8d-b3edfbdb6625" />
+						</otherwise>
+					</choice>
+				</foreach>
+			</when>
+			<when expression="#[(vars.source == 'kundalhalli') and (vars.destination == 'Kampegowda')]" >
+				<http:request method="GET" doc:name="RequestOlaPartner" doc:id="868dc521-0634-46de-b490-4aaba217427a" config-ref="HTTP_Request_configuration_Ola" path="/api/ola" />
+				<foreach doc:name="Check For the available car as per the source and destination" doc:id="5779480c-9cb6-46e5-b881-fe5a751c02ad" >
+					<choice doc:name="checkCarsAvailable" doc:id="185bff0a-9e3e-4c59-a367-4fa1991f7ebd" >
+						<when expression="#[(vars.source == payload.source) and (vars.destination == payload.destination)]" >
+							<ee:transform doc:name="Transform Message" doc:id="ea52c486-f815-419c-9ce6-c25e154c46d7" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+						<otherwise >
+							<set-payload value="No cars available for the selected destination" doc:name="Set Payload" doc:id="0748b7b4-6b4d-48b4-b332-a5280045d4d9" />
+						</otherwise>
+					</choice>
+				</foreach>
+			</when>
+			<otherwise >
+				<set-payload value="No cars available for the selected destination" doc:name="Set Payload" doc:id="a1817e3b-2570-4726-be93-b4b5e5b2be1c" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="deleteCarBooking" doc:id="46411ad2-2b45-4f16-9f8b-a5067888dc4d" >
+		<choice doc:name="Choice" doc:id="f2d32c74-54c7-40fc-be23-3b9622500201" >
+			<when expression='#[attributes.queryParams.partner == "uber"]'>
+				<http:request method="DELETE" doc:name="Request" doc:id="c30d21d2-3872-4756-9b64-566093c4234b" config-ref="HTTP_Request_configuration_Uber" path="/api/uber/{ID}">
+					<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"ID" : attributes.uriParams.ID
+}]]]></http:uri-params>
+				</http:request>
+			</when>
+			<when expression='#[attributes.queryParams.partner == "ola"]'>
+				<http:request method="DELETE" doc:name="Request" doc:id="55eb84de-3c42-4e3b-ba31-3517fbc4ccc0" config-ref="HTTP_Request_configuration_Ola" path="/api/ola/{ID}">
+					<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"ID" : attributes.uriParams.ID
+}]]]></http:uri-params>
+				</http:request>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="bb7800d1-f507-49a6-bf63-e3b7e03b1458" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Please pass correct query parameter"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
