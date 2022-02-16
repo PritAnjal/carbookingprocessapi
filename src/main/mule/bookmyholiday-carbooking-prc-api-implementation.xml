@@ -15,18 +15,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload map ( payload01 , indexOfPayload01 ) -> {
-	message:"Hi " ++ payload01.firstName ++ ", Your car is booked successfully" as String,
-	carBookingDetails: {
-		Partner: payload01.partner,
-		Source: payload01.source,
-		Destination: payload01.destination,
-		ScheduledDate: now() as Date {format: "yyyy/MM/dd"} as String,
-		ScheduledTime: now() as String {format : "HH:mm:ss"},
-		TypeOfCar: payload01.typeOfCar,
-		NoOfSeatsBooked: payload01.noOfSeats
-	}
-}]]></ee:set-payload>
+payload]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
@@ -37,18 +26,8 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload map ( payload01 , indexOfPayload01 ) -> {
-	message:"Hi " ++ payload01.firstName ++ ", Your car is booked successfully" as String,
-	carBookingDetails: {
-		Partner: payload01.partner,
-		Source: payload01.source,
-		Destination: payload01.destination,
-		ScheduledDate: now() as Date {format: "yyyy/MM/dd"} as String,
-		ScheduledTime: now() as String {format : "HH:mm:ss"},
-		TypeOfCar: payload01.typeOfCar,
-		NoOfSeatsBooked: payload01.noOfSeats
-	}
-}]]></ee:set-payload>
+payload
+]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
