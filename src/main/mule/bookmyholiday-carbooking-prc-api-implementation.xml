@@ -84,6 +84,18 @@ payload]]></ee:set-payload>
 				<set-payload value="No cars available for the selected destination" doc:name="Set Payload" doc:id="a1817e3b-2570-4726-be93-b4b5e5b2be1c" />
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="53be14c5-19c9-4bc7-96d1-34f71556b9a9" type="HTTP:TOO_MANY_REQUESTS">
+				<ee:transform doc:name="Transform Message" doc:id="a7a118ee-a83f-434c-b55f-a0eb92542c29" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="deleteCarBooking" doc:id="46411ad2-2b45-4f16-9f8b-a5067888dc4d" >
 		<choice doc:name="Choice" doc:id="f2d32c74-54c7-40fc-be23-3b9622500201" >
